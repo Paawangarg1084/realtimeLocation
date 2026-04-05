@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Tracker</title>
+
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+
+  <link rel="stylesheet"
+    href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    #map {
+      height: 100vh;
+    }
+
+    .room-box {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="room-box">
+    <input id="roomInput" placeholder="Enter Room Code" />
+    <button onclick="joinRoom()">Join</button>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/script.js"></script>
+
+</body>
+</html>
