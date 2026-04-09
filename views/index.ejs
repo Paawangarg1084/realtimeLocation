@@ -74,6 +74,11 @@
 
     <!-- 🚀 JOIN BUTTON -->
     <button onclick="joinRoom()">Join Room</button>
+    <select id="userList" onchange="followUser(this.value)">
+  <option value="">Follow User</option>
+</select>
+
+<button onclick="enableFollow()">Follow Me</button>
   </div>
 
   <div id="map"></div>
