@@ -51,7 +51,7 @@ socket.on("receive-location", (data) => {
   } else {
     markers[id] = L.marker([lat, lng])
       .addTo(map)
-      .bindPopup(user); // 🔥 SHOW NAME
+      .bindPopup(username); 
   }
 
   // route

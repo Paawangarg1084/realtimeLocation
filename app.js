@@ -36,7 +36,7 @@ io.on("connection", (socket) => {
         lat,
         lng,
         id: socket.id,
-        username: socket.username // 🔥 ADD THIS
+        username: socket.username 
       });
     }
   });
