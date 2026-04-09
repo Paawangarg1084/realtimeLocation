@@ -15,10 +15,8 @@ let isUserInteracting = false;
 let username = "";
 
 // 🖐️ Detect user dragging map
-map.on("mousedown", () => isUserInteracting = true);
-map.on("mouseup", () => isUserInteracting = false);
-map.on("touchstart", () => isUserInteracting = true);
-map.on("touchend", () => isUserInteracting = false);
+map.on("movestart", () => isUserInteracting = true);
+map.on("moveend", () => isUserInteracting = false);
 
 // ✅ JOIN ROOM
 function joinRoom() {
@@ -100,7 +98,7 @@ if (navigator.geolocation) {
           .bindPopup("You (" + username + ")"); // 🔥 YOUR NAME
       }
 
-      if (!isUserInteracting) {
+      if (!isUserInteracting && !roomId) {
         map.setView([latitude, longitude], 15);
       }
 
@@ -113,7 +111,9 @@ if (navigator.geolocation) {
     },
     (err) => console.log(err),
     {
-      enableHighAccuracy: true
+      enableHighAccuracy: true,
+      timeout:10000,
+      maximumAge:0
     }
   );
 }
