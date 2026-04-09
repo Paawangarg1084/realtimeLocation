@@ -21,64 +21,88 @@
       height: 100vh;
     }
 
-    /* 📦 Top control box */
-    .room-box {
+    /* ☰ Toggle Button */
+    .panel-toggle {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 12px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      width: 220px;
+      top: 15px;
+      left: 15px;
+      z-index: 2000;
+      background: #007bff;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
     }
 
-    .room-box input {
+    /* 📱 Side Panel */
+    .side-panel {
+      position: absolute;
+      top: 0;
+      left: -260px;
+      width: 250px;
+      height: 100%;
+      background: white;
+      z-index: 1500;
+      padding: 15px;
+      transition: left 0.3s ease;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+      overflow-y: auto;
+    }
+
+    .side-panel.open {
+      left: 0;
+    }
+
+    .side-panel input,
+    .side-panel button,
+    .side-panel select {
       width: 100%;
-      padding: 6px;
-      margin-bottom: 8px;
-      border-radius: 5px;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 6px;
       border: 1px solid #ccc;
     }
 
-    .room-box button {
-      width: 100%;
-      padding: 7px;
-      border: none;
+    .side-panel button {
       background: #007bff;
       color: white;
-      border-radius: 5px;
+      border: none;
       cursor: pointer;
     }
 
-    .room-box button:hover {
+    .side-panel button:hover {
       background: #0056b3;
     }
 
-    /* 🔥 Zoom control fix */
+    /* 📍 Fix zoom position */
     .leaflet-control-zoom {
-      margin-top: 120px !important;
+      margin-bottom: 20px !important;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="room-box">
-    <!-- 👤 NAME INPUT -->
-    <input id="nameInput" placeholder="Enter your name" />
+  <!-- ☰ BUTTON -->
+  <div class="panel-toggle" onclick="togglePanel()">☰</div>
 
-    <!-- 🔑 ROOM INPUT -->
+  <!-- 📦 SIDE PANEL -->
+  <div class="side-panel" id="sidePanel">
+
+    <h3>Live Tracker</h3>
+
+    <input id="nameInput" placeholder="Enter Your Name" />
     <input id="roomInput" placeholder="Enter Room Code" />
 
-    <!-- 🚀 JOIN BUTTON -->
     <button onclick="joinRoom()">Join Room</button>
-    <select id="userList" onchange="followUser(this.value)">
-  <option value="">Follow User</option>
-</select>
 
-<button onclick="enableFollow()">Follow Me</button>
+    <select id="userList" onchange="followUser(this.value)">
+      <option value="">Follow User</option>
+    </select>
+
+    <button onclick="enableFollow()">Follow Me</button>
+
   </div>
 
   <div id="map"></div>
