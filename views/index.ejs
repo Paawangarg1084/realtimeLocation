@@ -14,31 +14,66 @@
     html, body {
       height: 100%;
       margin: 0;
+      font-family: Arial, sans-serif;
     }
-    .leaflet-control-zoom {
-  margin-top: 80px !important;
-}
 
     #map {
       height: 100vh;
     }
 
+    /* 📦 Top control box */
     .room-box {
       position: absolute;
       top: 10px;
       left: 10px;
       z-index: 1000;
       background: white;
-      padding: 10px;
-      border-radius: 8px;
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      width: 220px;
+    }
+
+    .room-box input {
+      width: 100%;
+      padding: 6px;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .room-box button {
+      width: 100%;
+      padding: 7px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .room-box button:hover {
+      background: #0056b3;
+    }
+
+    /* 🔥 Zoom control fix */
+    .leaflet-control-zoom {
+      margin-top: 120px !important;
     }
   </style>
 </head>
+
 <body>
 
   <div class="room-box">
+    <!-- 👤 NAME INPUT -->
+    <input id="nameInput" placeholder="Enter your name" />
+
+    <!-- 🔑 ROOM INPUT -->
     <input id="roomInput" placeholder="Enter Room Code" />
-    <button onclick="joinRoom()">Join</button>
+
+    <!-- 🚀 JOIN BUTTON -->
+    <button onclick="joinRoom()">Join Room</button>
   </div>
 
   <div id="map"></div>

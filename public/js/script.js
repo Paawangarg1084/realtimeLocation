@@ -12,6 +12,7 @@ let myLocation = null;
 let roomId = null;
 let routingControl = null;
 let isUserInteracting = false;
+let username = "";
 
 // 🖐️ Detect user dragging map
 map.on("mousedown", () => isUserInteracting = true);
@@ -19,35 +20,40 @@ map.on("mouseup", () => isUserInteracting = false);
 map.on("touchstart", () => isUserInteracting = true);
 map.on("touchend", () => isUserInteracting = false);
 
-// JOIN ROOM
+// ✅ JOIN ROOM
 function joinRoom() {
-  const input = document.getElementById("roomInput");
-  roomId = input.value;
+  const roomInput = document.getElementById("roomInput").value;
+  const nameInput = document.getElementById("nameInput").value;
 
-  if (!roomId) {
-    alert("Enter room code");
+  if (!roomInput || !nameInput) {
+    alert("Enter room code and name");
     return;
   }
 
-  socket.emit("join-room", roomId);
+  roomId = roomInput;
+  username = nameInput;
+
+  socket.emit("join-room", {
+    roomId: roomId,
+    username: username
+  });
+
   alert("Joined room: " + roomId);
 }
 
-// RECEIVE LOCATION
+// ✅ RECEIVE LOCATION
 socket.on("receive-location", (data) => {
-  const { lat, lng, id } = data;
+  const { lat, lng, id, username: user } = data;
 
-  // ❗ ignore own duplicate
   if (id === socket.id) return;
-
-  // ❗ stop updates while dragging
   if (isUserInteracting) return;
 
   if (markers[id]) {
     markers[id].setLatLng([lat, lng]);
   } else {
-    markers[id] = L.marker([lat, lng]).addTo(map)
-      .bindPopup("Friend");
+    markers[id] = L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup(user); // 🔥 SHOW NAME
   }
 
   // route
@@ -66,7 +72,7 @@ socket.on("receive-location", (data) => {
   }
 });
 
-// REMOVE USER MARKER WHEN TAB CLOSED
+// ✅ REMOVE USER
 socket.on("user-disconnected", (id) => {
   if (markers[id]) {
     map.removeLayer(markers[id]);
@@ -78,36 +84,36 @@ socket.on("user-disconnected", (id) => {
   }
 });
 
-// SEND OWN LOCATION
+// ✅ SEND OWN LOCATION
 if (navigator.geolocation) {
-  navigator.geolocation.watchPosition((position) => {
-    const { latitude, longitude } = position.coords;
+  navigator.geolocation.watchPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
 
-    myLocation = { lat: latitude, lng: longitude };
+      myLocation = { lat: latitude, lng: longitude };
 
-    // show own marker always
-    if (myMarker) {
-      myMarker.setLatLng([latitude, longitude]);
-    } else {
-      myMarker = L.marker([latitude, longitude]).addTo(map)
-        .bindPopup("You are here")
-        .openPopup();
+      if (myMarker) {
+        myMarker.setLatLng([latitude, longitude]);
+      } else {
+        myMarker = L.marker([latitude, longitude])
+          .addTo(map)
+          .bindPopup("You (" + username + ")"); // 🔥 YOUR NAME
+      }
+
+      if (!isUserInteracting) {
+        map.setView([latitude, longitude], 15);
+      }
+
+      if (roomId) {
+        socket.emit("send-location", {
+          lat: latitude,
+          lng: longitude
+        });
+      }
+    },
+    (err) => console.log(err),
+    {
+      enableHighAccuracy: true
     }
-
-    if (!isUserInteracting) {
-      map.setView([latitude, longitude], 15);
-    }
-
-    // send only if in room
-    if (roomId) {
-      socket.emit("send-location", {
-        lat: latitude,
-        lng: longitude
-      });
-    }
-  },
-  (err) => console.log(err),
-  {
-    enableHighAccuracy: true
-  });
+  );
 }

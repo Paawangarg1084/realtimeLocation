@@ -18,12 +18,16 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("join-room", (roomId) => {
+  // ✅ JOIN ROOM WITH USERNAME
+  socket.on("join-room", ({ roomId, username }) => {
     socket.join(roomId);
     socket.roomId = roomId;
-    console.log("Joined room:", roomId);
+    socket.username = username;
+
+    console.log(`${username} joined room ${roomId}`);
   });
 
+  // ✅ SEND LOCATION WITH NAME
   socket.on("send-location", (data) => {
     const { lat, lng } = data;
 
@@ -31,12 +35,13 @@ io.on("connection", (socket) => {
       io.to(socket.roomId).emit("receive-location", {
         lat,
         lng,
-        id: socket.id
+        id: socket.id,
+        username: socket.username // 🔥 ADD THIS
       });
     }
   });
 
-  // 🔥 REMOVE USER WHEN TAB CLOSED
+  // ✅ REMOVE USER
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
 
