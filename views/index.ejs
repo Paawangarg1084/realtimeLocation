@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Live Tracker</title>
 
   <link rel="stylesheet"
@@ -12,16 +12,15 @@
 
   <style>
     html, body {
-      height: 100%;
       margin: 0;
-      font-family: Arial, sans-serif;
+      height: 100%;
     }
 
     #map {
       height: 100vh;
     }
 
-    /* ☰ Toggle Button */
+    /* ☰ Button */
     .panel-toggle {
       position: absolute;
       top: 15px;
@@ -30,12 +29,11 @@
       background: #007bff;
       color: white;
       padding: 10px;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
-      user-select: none;
     }
 
-    /* 📱 Side Panel */
+    /* Panel */
     .side-panel {
       position: absolute;
       top: 0;
@@ -46,8 +44,6 @@
       z-index: 1500;
       padding: 15px;
       transition: left 0.3s ease;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-      overflow-y: auto;
     }
 
     .side-panel.open {
@@ -60,57 +56,35 @@
       width: 100%;
       margin-bottom: 10px;
       padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    .side-panel button {
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    .side-panel button:hover {
-      background: #0056b3;
-    }
-
-    /* 📍 Fix zoom position */
-    .leaflet-control-zoom {
-      margin-bottom: 20px !important;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ☰ BUTTON -->
-  <div class="panel-toggle" onclick="togglePanel()">☰</div>
+<div class="panel-toggle" onclick="togglePanel()">☰</div>
 
-  <!-- 📦 SIDE PANEL -->
-  <div class="side-panel" id="sidePanel">
+<div class="side-panel" id="sidePanel">
+  <h3>Tracker</h3>
 
-    <h3>Live Tracker</h3>
+  <input id="nameInput" placeholder="Your Name">
+  <input id="roomInput" placeholder="Room Code">
 
-    <input id="nameInput" placeholder="Enter Your Name" />
-    <input id="roomInput" placeholder="Enter Room Code" />
+  <button onclick="joinRoom()">Join Room</button>
 
-    <button onclick="joinRoom()">Join Room</button>
+  <select id="userList" onchange="followUser(this.value)">
+    <option value="">Follow User</option>
+  </select>
 
-    <select id="userList" onchange="followUser(this.value)">
-      <option value="">Follow User</option>
-    </select>
+  <button onclick="enableFollow()">Follow Me</button>
+</div>
 
-    <button onclick="enableFollow()">Follow Me</button>
+<div id="map"></div>
 
-  </div>
-
-  <div id="map"></div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/js/script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/script.js"></script>
 
 </body>
 </html>
