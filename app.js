@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-
 const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -25,9 +24,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-location", (data) => {
-    if (!data.roomId) return; // FIXED: Use roomId from the incoming data
-
-    io.to(data.roomId).emit("receive-location", {
+    // FIXED: Broadcast to others in the same room
+    if (!data.roomId) return;
+    socket.to(data.roomId).emit("receive-location", {
       lat: data.lat,
       lng: data.lng,
       id: socket.id,
@@ -43,5 +42,5 @@ io.on("connection", (socket) => {
 });
 
 server.listen(3000, () => {
-  console.log("Server running on 3000");
+  console.log("Server running on http://localhost:3000");
 });

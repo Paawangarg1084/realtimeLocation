@@ -27,7 +27,7 @@ function updateMapTheme(isDark) {
 
   tileLayer = L.tileLayer(
     isDark
-      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      ? "https://{s}://{z}/{x}/{y}{r}.png"
       : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     { attribution: "© OpenStreetMap" }
   ).addTo(map);
@@ -92,6 +92,11 @@ function joinRoom() {
 
   roomId = roomInput;
   username = nameInput;
+
+  // FIX: Update your marker label instantly when you join
+  if (myMarker) {
+    myMarker.setTooltipContent("You (" + username + ")");
+  }
 
   socket.emit("join-room", { roomId, username });
 
@@ -202,10 +207,11 @@ if (navigator.geolocation) {
 
       const newPos = { lat: latitude, lng: longitude };
 
+      // FIX: Ensure your own marker is created/updated locally
       if (!myMarker) {
         myMarker = L.marker([latitude, longitude])
           .addTo(map)
-          .bindTooltip("You (" + username + ")", {
+          .bindTooltip("You (" + (username || "...") + ")", {
             permanent: true,
             direction: "top"
           });
