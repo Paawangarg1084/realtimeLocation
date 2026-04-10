@@ -1,6 +1,9 @@
 const socket = io();
 
-// ✅ MOBILE SAFE MAP
+// 🌗 THEME STATE
+let isDark = localStorage.getItem("theme") === "dark";
+
+// ✅ MAP INIT
 const map = L.map("map", {
   zoomControl: false,
   touchZoom: true,
@@ -10,12 +13,44 @@ const map = L.map("map", {
   tap: true
 }).setView([28.9845, 77.7064], 13);
 
-// ✅ Zoom bottom-right
+// ✅ ZOOM CONTROL
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "© OpenStreetMap"
-}).addTo(map);
+// 🌍 TILE LAYERS
+const lightLayer = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  { attribution: "© OpenStreetMap" }
+);
+
+const darkLayer = L.tileLayer(
+  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+  { attribution: "© CartoDB" }
+);
+
+// APPLY DEFAULT THEME
+if (isDark) {
+  darkLayer.addTo(map);
+  document.body.classList.add("dark");
+} else {
+  lightLayer.addTo(map);
+}
+
+// 🌗 TOGGLE THEME
+function toggleTheme() {
+  isDark = !isDark;
+
+  if (isDark) {
+    map.removeLayer(lightLayer);
+    darkLayer.addTo(map);
+    document.body.classList.add("dark");
+    localStorage.setItem("theme", "dark");
+  } else {
+    map.removeLayer(darkLayer);
+    lightLayer.addTo(map);
+    document.body.classList.remove("dark");
+    localStorage.setItem("theme", "light");
+  }
+}
 
 let markers = {};
 let lastPositions = {};
@@ -60,7 +95,7 @@ function animateMarker(marker, from, to) {
   move();
 }
 
-// 🟢 Stop auto-follow on manual move
+// 🟢 STOP AUTO FOLLOW
 map.on("movestart", () => {
   autoFollow = false;
 });
@@ -112,7 +147,6 @@ socket.on("receive-location", ({ lat, lng, id, username: user }) => {
         direction: "top"
       });
 
-    // dropdown
     const dropdown = document.getElementById("userList");
     const option = document.createElement("option");
     option.value = id;
@@ -122,12 +156,10 @@ socket.on("receive-location", ({ lat, lng, id, username: user }) => {
 
   lastPositions[id] = newPos;
 
-  // FOLLOW USER
   if (autoFollow && followUserId === id) {
     map.panTo([lat, lng]);
   }
 
-  // ROUTE
   if (myLocation && followUserId === id) {
     if (routingControl) {
       map.removeControl(routingControl);
@@ -172,7 +204,6 @@ if (navigator.geolocation) {
 
       myLocation = newPos;
 
-      // 🔵 Accuracy circle
       if (accuracyCircle) {
         accuracyCircle.setLatLng([latitude, longitude]);
         accuracyCircle.setRadius(accuracy);
@@ -184,7 +215,6 @@ if (navigator.geolocation) {
         }).addTo(map);
       }
 
-      // FOLLOW SELF
       if (autoFollow && !followUserId) {
         map.panTo([latitude, longitude]);
       }

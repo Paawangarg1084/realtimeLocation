@@ -6,9 +6,11 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Leaflet CSS -->
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 
+  <!-- Routing CSS -->
   <link rel="stylesheet"
     href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
@@ -22,11 +24,6 @@
       height: 100vh;
       width: 100vw;
       z-index: 1;
-    }
-
-    /* 🔥 Zoom button fix */
-    .leaflet-control-zoom {
-      margin-bottom: 60px !important;
     }
 
     /* ☰ Button */
@@ -53,7 +50,6 @@
       z-index: 2000;
       padding: 15px;
       transition: left 0.3s ease;
-      touch-action: auto;
     }
 
     .side-panel.open {
@@ -66,31 +62,38 @@
       width: 100%;
       margin-bottom: 10px;
       padding: 8px;
-      pointer-events: auto;
     }
 
-    /* 🔥 Mobile touch fix */
-    .leaflet-container {
-      touch-action: pan-x pan-y;
+    /* 🌙 DARK MODE */
+    body.dark {
+      background: #121212;
+      color: white;
     }
 
-    /* 🔥 Bigger zoom buttons */
-     /* 🔥 Bigger zoom buttons */
-.leaflet-control-zoom a {
-  width: 50px !important;
-  height: 50px !important;
-  line-height: 50px !important;
-  font-size: 22px !important;
-   border-radius: 10px !important;
-}
+    body.dark #sidePanel {
+      background: #1e1e1e;
+    }
 
-/* 🔥 Move to middle-right */
-.leaflet-control-zoom {
-  position: absolute !important;
-  right: 10px !important;
-  bottom: 120px !important; /* 👈 upar shift */
-  z-index: 1000;
-}
+    body.dark button {
+      background: #333;
+      color: white;
+    }
+
+    /* Zoom buttons */
+    .leaflet-control-zoom a {
+      width: 50px !important;
+      height: 50px !important;
+      line-height: 50px !important;
+      font-size: 22px !important;
+      border-radius: 10px !important;
+    }
+
+    .leaflet-control-zoom {
+      position: absolute !important;
+      right: 10px !important;
+      bottom: 120px !important;
+      z-index: 1000;
+    }
   </style>
 </head>
 
@@ -111,14 +114,105 @@
   </select>
 
   <button onclick="enableFollow()">Follow Me</button>
+
+  <!-- 🌙 THEME BUTTON -->
+  <button onclick="toggleTheme()">🌙 Toggle Theme</button>
 </div>
 
 <div id="map"></div>
 
+<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 <script src="/socket.io/socket.io.js"></script>
-<script src="/js/script.js"></script>
+
+<script>
+const socket = io();
+
+// 🌗 THEME
+let isDark = localStorage.getItem("theme") === "dark";
+
+// ✅ MAP
+const map = L.map("map", {
+  zoomControl: false
+}).setView([28.9845, 77.7064], 13);
+
+L.control.zoom({ position: "bottomright" }).addTo(map);
+
+// 🌍 TILE LAYERS
+const lightLayer = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+);
+
+const darkLayer = L.tileLayer(
+  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+);
+
+// APPLY THEME
+if (isDark) {
+  darkLayer.addTo(map);
+  document.body.classList.add("dark");
+} else {
+  lightLayer.addTo(map);
+}
+
+// 🌙 TOGGLE
+function toggleTheme() {
+  isDark = !isDark;
+
+  if (isDark) {
+    map.removeLayer(lightLayer);
+    darkLayer.addTo(map);
+    document.body.classList.add("dark");
+    localStorage.setItem("theme", "dark");
+  } else {
+    map.removeLayer(darkLayer);
+    lightLayer.addTo(map);
+    document.body.classList.remove("dark");
+    localStorage.setItem("theme", "light");
+  }
+}
+
+// PANEL
+function togglePanel() {
+  document.getElementById("sidePanel").classList.toggle("open");
+}
+
+let markers = {};
+let myLocation = null;
+let roomId = null;
+let username = "";
+
+// JOIN ROOM
+function joinRoom() {
+  roomId = document.getElementById("roomInput").value;
+  username = document.getElementById("nameInput").value;
+
+  socket.emit("join-room", { roomId, username });
+}
+
+// RECEIVE LOCATION
+socket.on("receive-location", ({ lat, lng, id }) => {
+  if (markers[id]) {
+    markers[id].setLatLng([lat, lng]);
+  } else {
+    markers[id] = L.marker([lat, lng]).addTo(map);
+  }
+});
+
+// GEOLOCATION
+navigator.geolocation.watchPosition((pos) => {
+  const { latitude, longitude } = pos.coords;
+
+  myLocation = { lat: latitude, lng: longitude };
+
+  map.panTo([latitude, longitude]);
+
+  if (roomId) {
+    socket.emit("send-location", myLocation);
+  }
+});
+</script>
 
 </body>
 </html>
