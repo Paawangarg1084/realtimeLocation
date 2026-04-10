@@ -1,9 +1,15 @@
 const socket = io();
 
 // 🌗 THEME STATE
+<<<<<<< HEAD
 let isDark = localStorage.getItem("theme") === "dark";
 
 // ✅ MAP INIT
+=======
+let isDarkMode = localStorage.getItem("theme") === "dark";
+
+// ✅ MOBILE SAFE MAP
+>>>>>>> 0857ed99421bc2a4a89107f9f41992e32493bd0d
 const map = L.map("map", {
   zoomControl: false,
   touchZoom: true,
@@ -16,6 +22,7 @@ const map = L.map("map", {
 // ✅ ZOOM CONTROL
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
+<<<<<<< HEAD
 // 🌍 TILE LAYERS
 const lightLayer = L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -51,6 +58,28 @@ function toggleTheme() {
     localStorage.setItem("theme", "light");
   }
 }
+=======
+// 🌗 TILE LAYER VARIABLE
+let tileLayer;
+
+// 🌗 FUNCTION TO UPDATE MAP THEME
+function updateMapTheme(isDark) {
+  if (tileLayer) {
+    map.removeLayer(tileLayer);
+  }
+
+  const url = isDark
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+  tileLayer = L.tileLayer(url, {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
+}
+
+// 🌗 INITIAL LOAD
+updateMapTheme(isDarkMode);
+>>>>>>> 0857ed99421bc2a4a89107f9f41992e32493bd0d
 
 let markers = {};
 let lastPositions = {};
@@ -66,6 +95,22 @@ let followUserId = null;
 // 🟢 PANEL TOGGLE
 function togglePanel() {
   document.getElementById("sidePanel").classList.toggle("open");
+}
+
+// 🌗 TOGGLE EVENT LISTENER
+const toggle = document.getElementById("themeToggle");
+
+if (toggle) {
+  toggle.checked = isDarkMode;
+
+  toggle.addEventListener("change", () => {
+    isDarkMode = toggle.checked;
+
+    document.body.classList.toggle("dark", isDarkMode);
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+
+    updateMapTheme(isDarkMode);
+  });
 }
 
 // 🟢 Smooth animation
@@ -223,10 +268,14 @@ if (navigator.geolocation) {
         socket.emit("send-location", newPos);
       }
     },
+    
     (err) => console.log(err),
     {
       enableHighAccuracy: true,
+
+
       timeout: 10000,
+
       maximumAge: 0
     }
   );
