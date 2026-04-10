@@ -227,10 +227,14 @@ if (navigator.geolocation) {
         socket.emit("send-location", newPos);
       }
     },
+    
     (err) => console.log(err),
     {
       enableHighAccuracy: true,
+
+
       timeout: 10000,
+
       maximumAge: 0
     }
   );
