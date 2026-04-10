@@ -20,25 +20,6 @@
       height: 100%;
     }
 
-    /* 🌗 THEME VARIABLES */
-    :root {
-      --bg: #ffffff;
-      --text: #000000;
-      --panel: #ffffff;
-    }
-
-    .dark {
-      --bg: #121212;
-      --text: #ffffff;
-      --panel: #1e1e1e;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      transition: 0.3s;
-    }
-
     #map {
       height: 100vh;
       width: 100vw;
@@ -65,15 +46,10 @@
       left: -260px;
       width: 250px;
       height: 100%;
-      background: var(--panel);
+      background: white;
       z-index: 2000;
       padding: 15px;
       transition: left 0.3s ease;
-<<<<<<< HEAD
-=======
-      display: flex;
-      flex-direction: column;
->>>>>>> 0857ed99421bc2a4a89107f9f41992e32493bd0d
     }
 
     .side-panel.open {
@@ -94,7 +70,6 @@
       color: white;
     }
 
-<<<<<<< HEAD
     body.dark #sidePanel {
       background: #1e1e1e;
     }
@@ -113,81 +88,12 @@
       border-radius: 10px !important;
     }
 
-=======
-    /* 🔥 Bigger zoom buttons */
-    .leaflet-control-zoom a {
-      width: 50px !important;
-      height: 50px !important;
-      line-height: 50px !important;
-      font-size: 22px !important;
-      border-radius: 10px !important;
-    }
-
-    /* 🔥 Move zoom buttons */
->>>>>>> 0857ed99421bc2a4a89107f9f41992e32493bd0d
     .leaflet-control-zoom {
       position: absolute !important;
       right: 10px !important;
       bottom: 120px !important;
       z-index: 1000;
     }
-<<<<<<< HEAD
-=======
-
-    /* 🌗 Toggle container */
-    .theme-toggle-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 10px;
-    }
-
-    /* 🌗 Toggle switch */
-    .theme-switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 25px;
-    }
-
-    .theme-switch input {
-      display: none;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      background-color: #ccc;
-      border-radius: 25px;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      transition: 0.3s;
-    }
-
-    .slider::before {
-      content: "";
-      position: absolute;
-      height: 20px;
-      width: 20px;
-      left: 3px;
-      bottom: 2.5px;
-      background-color: white;
-      border-radius: 50%;
-      transition: 0.3s;
-    }
-
-    input:checked + .slider {
-      background-color: #4caf50;
-    }
-
-    input:checked + .slider::before {
-      transform: translateX(25px);
-    }
->>>>>>> 0857ed99421bc2a4a89107f9f41992e32493bd0d
   </style>
 </head>
 
@@ -209,21 +115,8 @@
 
   <button onclick="enableFollow()">Follow Me</button>
 
-<<<<<<< HEAD
   <!-- 🌙 THEME BUTTON -->
   <button onclick="toggleTheme()">🌙 Toggle Theme</button>
-=======
-  <!-- ✅ TOGGLE INSIDE PANEL (FIXED) -->
-  <div class="theme-toggle-container">
-    <span>Dark Mode</span>
-
-    <label class="theme-switch">
-      <input type="checkbox" id="themeToggle">
-      <span class="slider"></span>
-    </label>
-  </div>
-
->>>>>>> 0857ed99421bc2a4a89107f9f41992e32493bd0d
 </div>
 
 <div id="map"></div>
@@ -234,7 +127,6 @@
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
-<<<<<<< HEAD
 const socket = io();
 
 // 🌗 THEME
@@ -321,40 +213,6 @@ navigator.geolocation.watchPosition((pos) => {
   }
 });
 </script>
-=======
-  function togglePanel() {
-    document.getElementById("sidePanel").classList.toggle("open");
-  }
-
-  const toggle = document.getElementById("themeToggle");
-
-  toggle.addEventListener("change", () => {
-    const isDark = toggle.checked;
-
-    document.body.classList.toggle("dark", isDark);
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-
-    if (typeof updateMapTheme === "function") {
-      updateMapTheme(isDark);
-    }
-  });
-
-  window.onload = () => {
-    const savedTheme = localStorage.getItem("theme");
-
-    if (savedTheme === "dark") {
-      document.body.classList.add("dark");
-      document.getElementById("themeToggle").checked = true;
-
-      if (typeof updateMapTheme === "function") {
-        updateMapTheme(true);
-      }
-    }
-  };
-</script>
-
-<script src="/js/script.js"></script>
->>>>>>> 0857ed99421bc2a4a89107f9f41992e32493bd0d
 
 </body>
 </html>
