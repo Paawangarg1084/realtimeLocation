@@ -36,28 +36,30 @@ function updateMapTheme(isDark) {
 updateMapTheme(isDarkMode);
 
 /* =====================
-   🧠 VARIABLES
+   🧠 STATE
 ===================== */
 
 let markers = {};
 let lastPositions = {};
 let myMarker = null;
 let myLocation = null;
+
 let roomId = null;
 let username = "";
+
 let followUserId = null;
 let autoFollow = true;
 
 /* =====================
-   🟢 PANEL TOGGLE
+   🟢 PANEL
 ===================== */
 
 function togglePanel() {
-  document.getElementById("sidePanel").classList.toggle("open");
+  document.getElementById("sidePanel")?.classList.toggle("open");
 }
 
 /* =====================
-   🌗 THEME TOGGLE UI
+   🌗 THEME TOGGLE
 ===================== */
 
 const toggle = document.getElementById("themeToggle");
@@ -80,8 +82,8 @@ if (toggle) {
 ===================== */
 
 function joinRoom() {
-  const roomInput = document.getElementById("roomInput").value;
-  const nameInput = document.getElementById("nameInput").value;
+  const roomInput = document.getElementById("roomInput")?.value;
+  const nameInput = document.getElementById("nameInput")?.value;
 
   if (!roomInput || !nameInput) {
     alert("Enter room code and name");
@@ -97,51 +99,53 @@ function joinRoom() {
 }
 
 /* =====================
-   🎯 FOLLOW USERS
+   🎯 FOLLOW
 ===================== */
-
-function enableFollow() {
-  followUserId = null;
-  autoFollow = true;
-}
 
 function followUser(id) {
   followUserId = id;
   autoFollow = true;
 }
 
+function enableFollow() {
+  followUserId = null;
+  autoFollow = true;
+}
+
 /* =====================
-   🎞️ ANIMATION
+   🎞️ SAFE ANIMATION
 ===================== */
 
 function animateMarker(marker, from, to) {
+  if (!marker) return;
+
   if (!from) {
     marker.setLatLng([to.lat, to.lng]);
     return;
   }
 
-  const frames = 12;
+  const steps = 10;
   let i = 0;
 
-  const dLat = (to.lat - from.lat) / frames;
-  const dLng = (to.lng - from.lng) / frames;
+  const dLat = (to.lat - from.lat) / steps;
+  const dLng = (to.lng - from.lng) / steps;
 
-  function move() {
-    if (i < frames) {
+  function step() {
+    if (i <= steps) {
       marker.setLatLng([
         from.lat + dLat * i,
         from.lng + dLng * i
       ]);
       i++;
-      requestAnimationFrame(move);
+      requestAnimationFrame(step);
     }
   }
 
-  move();
+  step();
 }
 
 /* =====================
-   🧭 STOP AUTO FOLLOW ON MOVE
+   🧭 STOP FOLLOW ON MOVE
 ===================== */
 
 map.on("movestart", () => {
@@ -149,31 +153,23 @@ map.on("movestart", () => {
 });
 
 /* =====================
-   📡 RECEIVE LOCATION
+   📡 RECEIVE USERS
 ===================== */
 
 socket.on("receive-location", ({ lat, lng, id, username: user }) => {
-  if (!lat || !lng) return;
+  if (!lat || !lng || !id) return;
 
   const newPos = { lat, lng };
 
-  if (markers[id]) {
-    animateMarker(markers[id], lastPositions[id], newPos);
-  } else {
+  if (!markers[id]) {
     markers[id] = L.marker([lat, lng])
       .addTo(map)
       .bindTooltip(user || "User", {
         permanent: true,
         direction: "top"
       });
-
-    const dropdown = document.getElementById("userList");
-    if (dropdown) {
-      const option = document.createElement("option");
-      option.value = id;
-      option.text = user || "User";
-      dropdown.appendChild(option);
-    }
+  } else {
+    animateMarker(markers[id], lastPositions[id], newPos);
   }
 
   lastPositions[id] = newPos;
@@ -184,13 +180,14 @@ socket.on("receive-location", ({ lat, lng, id, username: user }) => {
 });
 
 /* =====================
-   ❌ USER DISCONNECT
+   ❌ DISCONNECT
 ===================== */
 
 socket.on("user-disconnected", (id) => {
   if (markers[id]) {
     map.removeLayer(markers[id]);
     delete markers[id];
+    delete lastPositions[id];
   }
 });
 
@@ -205,14 +202,15 @@ if (navigator.geolocation) {
 
       const newPos = { lat: latitude, lng: longitude };
 
-      if (myMarker) {
-        animateMarker(myMarker, myLocation, newPos);
-      } else {
+      if (!myMarker) {
         myMarker = L.marker([latitude, longitude])
           .addTo(map)
           .bindTooltip("You (" + username + ")", {
-            permanent: true
+            permanent: true,
+            direction: "top"
           });
+      } else {
+        animateMarker(myMarker, myLocation, newPos);
       }
 
       myLocation = newPos;
@@ -225,7 +223,7 @@ if (navigator.geolocation) {
         socket.emit("send-location", newPos);
       }
     },
-    (err) => console.log(err),
+    (err) => console.log("Geo error:", err),
     {
       enableHighAccuracy: true,
       timeout: 10000,
