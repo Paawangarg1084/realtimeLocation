@@ -1,5 +1,8 @@
 const socket = io();
 
+// 🌗 THEME STATE
+let isDarkMode = localStorage.getItem("theme") === "dark";
+
 // ✅ MOBILE SAFE MAP
 const map = L.map("map", {
   zoomControl: false,
@@ -13,9 +16,26 @@ const map = L.map("map", {
 // ✅ Zoom bottom-right
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "© OpenStreetMap"
-}).addTo(map);
+// 🌗 TILE LAYER VARIABLE
+let tileLayer;
+
+// 🌗 FUNCTION TO UPDATE MAP THEME
+function updateMapTheme(isDark) {
+  if (tileLayer) {
+    map.removeLayer(tileLayer);
+  }
+
+  const url = isDark
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+  tileLayer = L.tileLayer(url, {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
+}
+
+// 🌗 INITIAL LOAD
+updateMapTheme(isDarkMode);
 
 let markers = {};
 let lastPositions = {};
@@ -31,6 +51,22 @@ let followUserId = null;
 // 🟢 PANEL TOGGLE
 function togglePanel() {
   document.getElementById("sidePanel").classList.toggle("open");
+}
+
+// 🌗 TOGGLE EVENT LISTENER
+const toggle = document.getElementById("themeToggle");
+
+if (toggle) {
+  toggle.checked = isDarkMode;
+
+  toggle.addEventListener("change", () => {
+    isDarkMode = toggle.checked;
+
+    document.body.classList.toggle("dark", isDarkMode);
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+
+    updateMapTheme(isDarkMode);
+  });
 }
 
 // 🟢 Smooth animation
@@ -112,7 +148,6 @@ socket.on("receive-location", ({ lat, lng, id, username: user }) => {
         direction: "top"
       });
 
-    // dropdown
     const dropdown = document.getElementById("userList");
     const option = document.createElement("option");
     option.value = id;
@@ -172,7 +207,6 @@ if (navigator.geolocation) {
 
       myLocation = newPos;
 
-      // 🔵 Accuracy circle
       if (accuracyCircle) {
         accuracyCircle.setLatLng([latitude, longitude]);
         accuracyCircle.setRadius(accuracy);
@@ -193,10 +227,14 @@ if (navigator.geolocation) {
         socket.emit("send-location", newPos);
       }
     },
+    
     (err) => console.log(err),
     {
       enableHighAccuracy: true,
+
+
       timeout: 10000,
+
       maximumAge: 0
     }
   );
