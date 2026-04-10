@@ -1,7 +1,7 @@
 const socket = io();
 
 /* =====================
-   🌗 THEME + MAP SETUP
+   🌗 MAP SETUP
 ===================== */
 
 let isDarkMode = localStorage.getItem("theme") === "dark";
@@ -17,7 +17,7 @@ const map = L.map("map", {
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
 /* =====================
-   🌍 TILE LAYER
+   🌍 TILE LAYER (FIXED)
 ===================== */
 
 let tileLayer;
@@ -27,7 +27,7 @@ function updateMapTheme(isDark) {
 
   tileLayer = L.tileLayer(
     isDark
-      ? "https://{s}://{z}/{x}/{y}{r}.png"
+      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
       : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     { attribution: "© OpenStreetMap" }
   ).addTo(map);
@@ -49,14 +49,6 @@ let username = "";
 
 let followUserId = null;
 let autoFollow = true;
-
-/* =====================
-   🟢 PANEL
-===================== */
-
-function togglePanel() {
-  document.getElementById("sidePanel")?.classList.toggle("open");
-}
 
 /* =====================
    🌗 THEME TOGGLE
@@ -93,12 +85,14 @@ function joinRoom() {
   roomId = roomInput;
   username = nameInput;
 
-  // FIX: Update your marker label instantly when you join
-  if (myMarker) {
-    myMarker.setTooltipContent("You (" + username + ")");
-  }
-
   socket.emit("join-room", { roomId, username });
+
+  if (myMarker) {
+    myMarker.bindTooltip("You (" + username + ")", {
+      permanent: true,
+      direction: "top"
+    });
+  }
 
   alert("Joined room: " + roomId);
 }
@@ -118,12 +112,13 @@ function enableFollow() {
 }
 
 /* =====================
-   🎞️ SAFE ANIMATION
+   🎞️ SAFE ANIMATION (FIXED)
 ===================== */
 
 function animateMarker(marker, from, to) {
   if (!marker) return;
 
+  // FIX: first time no "from"
   if (!from) {
     marker.setLatLng([to.lat, to.lng]);
     return;
@@ -150,15 +145,7 @@ function animateMarker(marker, from, to) {
 }
 
 /* =====================
-   🧭 STOP FOLLOW ON MOVE
-===================== */
-
-map.on("movestart", () => {
-  autoFollow = false;
-});
-
-/* =====================
-   📡 RECEIVE USERS
+   📡 RECEIVE USERS (FIXED)
 ===================== */
 
 socket.on("receive-location", ({ lat, lng, id, username: user }) => {
@@ -197,7 +184,7 @@ socket.on("user-disconnected", (id) => {
 });
 
 /* =====================
-   📍 MY LOCATION
+   📍 MY LOCATION (FIXED EMIT)
 ===================== */
 
 if (navigator.geolocation) {
@@ -207,11 +194,10 @@ if (navigator.geolocation) {
 
       const newPos = { lat: latitude, lng: longitude };
 
-      // FIX: Ensure your own marker is created/updated locally
       if (!myMarker) {
         myMarker = L.marker([latitude, longitude])
           .addTo(map)
-          .bindTooltip("You (" + (username || "...") + ")", {
+          .bindTooltip("You (" + username + ")", {
             permanent: true,
             direction: "top"
           });
@@ -226,8 +212,13 @@ if (navigator.geolocation) {
       }
 
       if (roomId) {
-        // FIXED: Include roomId so the server knows where to send this
-        socket.emit("send-location", { ...newPos, roomId });
+        // FIXED: ONLY send clean object
+        socket.emit("send-location", {
+          lat: latitude,
+          lng: longitude,
+          roomId,
+          username
+        });
       }
     },
     (err) => console.log("Geo error:", err),
