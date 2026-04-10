@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Live Tracker</title>
 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 
@@ -18,14 +20,21 @@
 
     #map {
       height: 100vh;
+      width: 100vw;
+      z-index: 1;
+    }
+
+    /* 🔥 Zoom button fix */
+    .leaflet-control-zoom {
+      margin-bottom: 60px !important;
     }
 
     /* ☰ Button */
     .panel-toggle {
       position: absolute;
-      top: 15px;
-      left: 15px;
-      z-index: 2000;
+      top: 10px;
+      left: 10px;
+      z-index: 2100;
       background: #007bff;
       color: white;
       padding: 10px;
@@ -41,9 +50,10 @@
       width: 250px;
       height: 100%;
       background: white;
-      z-index: 1500;
+      z-index: 2000;
       padding: 15px;
       transition: left 0.3s ease;
+      touch-action: auto;
     }
 
     .side-panel.open {
@@ -56,6 +66,12 @@
       width: 100%;
       margin-bottom: 10px;
       padding: 8px;
+      pointer-events: auto;
+    }
+
+    /* 🔥 Mobile touch fix */
+    .leaflet-container {
+      touch-action: pan-x pan-y;
     }
 
     /* 🔥 Bigger zoom buttons */
