@@ -25,9 +25,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-location", (data) => {
-    if (!socket.roomId) return;
+    if (!data.roomId) return; // FIXED: Use roomId from the incoming data
 
-    io.to(socket.roomId).emit("receive-location", {
+    io.to(data.roomId).emit("receive-location", {
       lat: data.lat,
       lng: data.lng,
       id: socket.id,

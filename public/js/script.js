@@ -220,7 +220,8 @@ if (navigator.geolocation) {
       }
 
       if (roomId) {
-        socket.emit("send-location", newPos);
+        // FIXED: Include roomId so the server knows where to send this
+        socket.emit("send-location", { ...newPos, roomId });
       }
     },
     (err) => console.log("Geo error:", err),

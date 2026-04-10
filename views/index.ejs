@@ -192,11 +192,21 @@ function joinRoom() {
 }
 
 // RECEIVE LOCATION
-socket.on("receive-location", ({ lat, lng, id }) => {
+socket.on("receive-location", ({ lat, lng, id, username: otherUser }) => {
   if (markers[id]) {
     markers[id].setLatLng([lat, lng]);
   } else {
-    markers[id] = L.marker([lat, lng]).addTo(map);
+    markers[id] = L.marker([lat, lng])
+      .addTo(map)
+      .bindTooltip(otherUser || "User", { permanent: true, direction: "top" });
+  }
+});
+
+// REMOVE ON DISCONNECT
+socket.on("user-disconnected", (id) => {
+  if (markers[id]) {
+    map.removeLayer(markers[id]);
+    delete markers[id];
   }
 });
 
@@ -209,8 +219,13 @@ navigator.geolocation.watchPosition((pos) => {
   map.panTo([latitude, longitude]);
 
   if (roomId) {
-    socket.emit("send-location", myLocation);
+    // FIXED: Added roomId to the payload so server can route it
+    socket.emit("send-location", { ...myLocation, roomId });
   }
+}, (err) => console.log(err), {
+  enableHighAccuracy: true,
+  timeout: 5000,
+  maximumAge: 0
 });
 </script>
 
