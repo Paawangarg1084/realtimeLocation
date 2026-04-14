@@ -91,6 +91,54 @@
       gap: 10px;
       margin-bottom: 15px;
     }
+
+    /* =========================
+   📱 MOBILE RESPONSIVE FIX
+========================= */
+
+@media (max-width: 768px) {
+
+  /* 🔥 Bigger zoom buttons */
+  .leaflet-control-zoom a {
+    width: 55px !important;
+    height: 55px !important;
+    line-height: 55px !important;
+    font-size: 24px !important;
+    border-radius: 12px !important;
+  }
+
+  /* 🔥 Proper position (middle-right) */
+  .leaflet-control-zoom {
+    position: absolute !important;
+    right: 10px !important;
+    bottom: 120px !important;
+    z-index: 1000;
+  }
+
+  /* 🔥 Sidebar full width */
+  .side-panel {
+    width: 80% !important;
+    left: -80% !important;
+  }
+
+  .side-panel.open {
+    left: 0 !important;
+  }
+
+  /* 🔥 Inputs bigger for touch */
+  .side-panel input,
+  .side-panel button,
+  .side-panel select {
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  /* 🔥 Toggle button bigger */
+  .panel-toggle {
+    padding: 12px;
+    font-size: 18px;
+  }
+}
   </style>
 </head>
 

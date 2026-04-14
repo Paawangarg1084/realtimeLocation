@@ -13,7 +13,7 @@ const map = L.map("map", {
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
 /* =====================
-   🌗 TILE LAYER (DARK/LIGHT)
+   🌗 TILE LAYER
 ===================== */
 
 let tileLayer;
@@ -29,7 +29,6 @@ function updateMapTheme(isDark) {
   ).addTo(map);
 }
 
-// initial load
 updateMapTheme(isDarkMode);
 
 /* =====================
@@ -45,7 +44,6 @@ if (toggle) {
     isDarkMode = toggle.checked;
 
     document.body.classList.toggle("dark", isDarkMode);
-
     localStorage.setItem("theme", isDarkMode ? "dark" : "light");
 
     updateMapTheme(isDarkMode);
@@ -201,7 +199,7 @@ socket.on("user-disconnected", (id) => {
 });
 
 /* =====================
-   📍 MY LOCATION
+   📍 MY LOCATION (🔥 FIXED)
 ===================== */
 
 if (navigator.geolocation) {
@@ -232,8 +230,13 @@ if (navigator.geolocation) {
         map.panTo([latitude, longitude]);
       }
 
+      // ✅ 🔥 MAIN FIX HERE
       if (roomId) {
-        socket.emit("send-location", newPos);
+        socket.emit("send-location", {
+          lat: latitude,
+          lng: longitude,
+          roomId: roomId   // 👈 THIS WAS MISSING
+        });
       }
     },
     (err) => console.log("Geo error:", err),
