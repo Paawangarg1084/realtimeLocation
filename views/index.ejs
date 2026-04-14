@@ -98,45 +98,46 @@
 
 @media (max-width: 768px) {
 
-  /* 🔥 Bigger zoom buttons */
+  /* 🔥 FIX: Zoom buttons visible + bigger */
+  .leaflet-control-zoom {
+    position: fixed !important;
+    right: 15px !important;
+    bottom: 140px !important;
+    z-index: 9999 !important;
+  }
+
   .leaflet-control-zoom a {
-    width: 55px !important;
-    height: 55px !important;
-    line-height: 55px !important;
-    font-size: 24px !important;
+    width: 60px !important;
+    height: 60px !important;
+    line-height: 60px !important;
+    font-size: 26px !important;
     border-radius: 12px !important;
   }
 
-  /* 🔥 Proper position (middle-right) */
-  .leaflet-control-zoom {
-    position: absolute !important;
-    right: 10px !important;
-    bottom: 120px !important;
-    z-index: 1000;
-  }
-
-  /* 🔥 Sidebar full width */
+  /* 🔥 FIX: Sidebar mobile full-size */
   .side-panel {
-    width: 80% !important;
-    left: -80% !important;
+    width: 85% !important;
+    max-width: 320px;
+    left: -85% !important;
+    padding: 20px !important;
   }
 
   .side-panel.open {
     left: 0 !important;
   }
 
-  /* 🔥 Inputs bigger for touch */
+  /* 🔥 Bigger inputs (touch friendly) */
   .side-panel input,
   .side-panel button,
   .side-panel select {
-    padding: 12px;
-    font-size: 16px;
+    padding: 14px !important;
+    font-size: 16px !important;
   }
 
-  /* 🔥 Toggle button bigger */
+  /* 🔥 Menu button bigger */
   .panel-toggle {
-    padding: 12px;
-    font-size: 18px;
+    padding: 14px !important;
+    font-size: 20px !important;
   }
 }
   </style>
