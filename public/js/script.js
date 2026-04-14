@@ -1,43 +1,26 @@
 const socket = io();
 
 /* =====================
-   🌗 MAP SETUP
+   🌍 MAP SETUP
 ===================== */
-let isDarkMode = localStorage.getItem("theme") === "dark";
 
 const map = L.map("map", {
-  zoomControl: false,
-  touchZoom: true,
-  dragging: true,
-  doubleClickZoom: true,
-  scrollWheelZoom: true
+  zoomControl: false
 }).setView([28.9845, 77.7064], 13);
 
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
-/* =====================
-   🌍 TILE LAYER (FIXED)
-===================== */
-let tileLayer;
-
-function updateMapTheme(isDark) {
-  if (tileLayer) map.removeLayer(tileLayer);
-
-  tileLayer = L.tileLayer(
-    isDark
-      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-      : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    { attribution: "© OpenStreetMap" }
-  ).addTo(map);
-}
-
-updateMapTheme(isDarkMode);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "© OpenStreetMap"
+}).addTo(map);
 
 /* =====================
    🧠 STATE
 ===================== */
+
 let markers = {};
 let lastPositions = {};
+
 let myMarker = null;
 let myLocation = null;
 
@@ -48,20 +31,9 @@ let followUserId = null;
 let autoFollow = true;
 
 /* =====================
-   🌗 THEME TOGGLE
+   🟢 PANEL
 ===================== */
-const toggle = document.getElementById("themeToggle");
-if (toggle) {
-  toggle.checked = isDarkMode;
-  toggle.addEventListener("change", () => {
-    isDarkMode = toggle.checked;
-    document.body.classList.toggle("dark", isDarkMode);
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
-    updateMapTheme(isDarkMode);
-  });
-}
 
-// UI Toggle Panel (Needed for your HTML)
 function togglePanel() {
   document.getElementById("sidePanel").classList.toggle("open");
 }
@@ -69,17 +41,18 @@ function togglePanel() {
 /* =====================
    🚀 JOIN ROOM
 ===================== */
-function joinRoom() {
-  const roomInput = document.getElementById("roomInput")?.value;
-  const nameInput = document.getElementById("nameInput")?.value;
 
-  if (!roomInput || !nameInput) {
+function joinRoom() {
+  const room = document.getElementById("roomInput").value;
+  const name = document.getElementById("nameInput").value;
+
+  if (!room || !name) {
     alert("Enter room code and name");
     return;
   }
 
-  roomId = roomInput;
-  username = nameInput;
+  roomId = room;
+  username = name;
 
   socket.emit("join-room", { roomId, username });
 
@@ -93,8 +66,9 @@ function joinRoom() {
 /* =====================
    🎯 FOLLOW
 ===================== */
+
 function followUser(id) {
-  followUserId = id || null;
+  followUserId = id;
   autoFollow = true;
 }
 
@@ -104,53 +78,69 @@ function enableFollow() {
 }
 
 /* =====================
-   🎞️ SAFE ANIMATION (FIXED)
+   🎞️ ANIMATION
 ===================== */
+
 function animateMarker(marker, from, to) {
-  if (!marker) return;
-  if (!from || (from.lat === to.lat && from.lng === to.lng)) {
+  if (!from) {
     marker.setLatLng([to.lat, to.lng]);
     return;
   }
 
-  let i = 0;
   const steps = 10;
+  let i = 0;
+
   const dLat = (to.lat - from.lat) / steps;
   const dLng = (to.lng - from.lng) / steps;
 
-  function step() {
+  function move() {
     if (i <= steps) {
-      marker.setLatLng([from.lat + dLat * i, from.lng + dLng * i]);
+      marker.setLatLng([
+        from.lat + dLat * i,
+        from.lng + dLng * i
+      ]);
       i++;
-      requestAnimationFrame(step);
+      requestAnimationFrame(move);
     }
   }
-  step();
+
+  move();
 }
 
 /* =====================
-   📡 RECEIVE USERS (FIXED)
+   🧭 STOP AUTO FOLLOW
 ===================== */
-socket.on("receive-location", (data) => {
-  const { lat, lng, id, username: user } = data;
-  if (!lat || !lng || !id) return;
+
+map.on("movestart", () => {
+  autoFollow = false;
+});
+
+/* =====================
+   📡 RECEIVE USERS
+===================== */
+
+socket.on("receive-location", ({ lat, lng, id, username: user }) => {
+  if (!lat || !lng) return;
 
   const newPos = { lat, lng };
 
   if (!markers[id]) {
-    // Create new marker
     markers[id] = L.marker([lat, lng])
       .addTo(map)
-      .bindTooltip(user || "User", { permanent: true, direction: "top" });
+      .bindTooltip(user || "User", {
+        permanent: true,
+        direction: "top"
+      });
 
-    // Update Dropdown List
+    // dropdown update
     const userList = document.getElementById("userList");
-    const option = document.createElement("option");
-    option.value = id;
-    option.text = user || id;
-    userList.add(option);
+    if (userList) {
+      const option = document.createElement("option");
+      option.value = id;
+      option.text = user || "User";
+      userList.appendChild(option);
+    }
   } else {
-    // Animate existing marker
     animateMarker(markers[id], lastPositions[id], newPos);
   }
 
@@ -162,32 +152,26 @@ socket.on("receive-location", (data) => {
 });
 
 /* =====================
-   ❌ DISCONNECT
+   ❌ USER DISCONNECT
 ===================== */
+
 socket.on("user-disconnected", (id) => {
   if (markers[id]) {
     map.removeLayer(markers[id]);
     delete markers[id];
     delete lastPositions[id];
-
-    // Remove from dropdown
-    const userList = document.getElementById("userList");
-    for (let i = 0; i < userList.options.length; i++) {
-      if (userList.options[i].value === id) {
-        userList.remove(i);
-        break;
-      }
-    }
   }
 });
 
 /* =====================
-   📍 MY LOCATION (FIXED)
+   📍 MY LOCATION
 ===================== */
+
 if (navigator.geolocation) {
   navigator.geolocation.watchPosition(
     (pos) => {
       const { latitude, longitude } = pos.coords;
+
       const newPos = { lat: latitude, lng: longitude };
 
       if (!myMarker) {
@@ -199,6 +183,10 @@ if (navigator.geolocation) {
           });
       } else {
         animateMarker(myMarker, myLocation, newPos);
+
+        if (username) {
+          myMarker.setTooltipContent("You (" + username + ")");
+        }
       }
 
       myLocation = newPos;
@@ -208,15 +196,14 @@ if (navigator.geolocation) {
       }
 
       if (roomId) {
-        socket.emit("send-location", {
-          lat: latitude,
-          lng: longitude,
-          roomId: roomId,
-          username: username
-        });
+        socket.emit("send-location", newPos);
       }
     },
-    (err) => console.error("Geo error:", err),
-    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    (err) => console.log("Geo error:", err),
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
   );
 }

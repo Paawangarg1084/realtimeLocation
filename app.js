@@ -21,12 +21,15 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     socket.roomId = roomId;
     socket.username = username;
+
+    console.log(`${username} joined ${roomId}`);
   });
 
   socket.on("send-location", (data) => {
-    // FIXED: Broadcast to others in the same room
     if (!data.roomId) return;
-    socket.to(data.roomId).emit("receive-location", {
+
+    // ✅ FIX: send to ALL (including sender)
+    io.to(data.roomId).emit("receive-location", {
       lat: data.lat,
       lng: data.lng,
       id: socket.id,
@@ -35,6 +38,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    console.log("Disconnected:", socket.id);
+
     if (socket.roomId) {
       io.to(socket.roomId).emit("user-disconnected", socket.id);
     }
