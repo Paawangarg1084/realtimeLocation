@@ -4,15 +4,53 @@ const socket = io();
    🌍 MAP SETUP
 ===================== */
 
+let isDarkMode = localStorage.getItem("theme") === "dark";
+
 const map = L.map("map", {
   zoomControl: false
 }).setView([28.9845, 77.7064], 13);
 
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "© OpenStreetMap"
-}).addTo(map);
+/* =====================
+   🌗 TILE LAYER (DARK/LIGHT)
+===================== */
+
+let tileLayer;
+
+function updateMapTheme(isDark) {
+  if (tileLayer) map.removeLayer(tileLayer);
+
+  tileLayer = L.tileLayer(
+    isDark
+      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    { attribution: "© OpenStreetMap" }
+  ).addTo(map);
+}
+
+// initial load
+updateMapTheme(isDarkMode);
+
+/* =====================
+   🌗 THEME TOGGLE
+===================== */
+
+const toggle = document.getElementById("themeToggle");
+
+if (toggle) {
+  toggle.checked = isDarkMode;
+
+  toggle.addEventListener("change", () => {
+    isDarkMode = toggle.checked;
+
+    document.body.classList.toggle("dark", isDarkMode);
+
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+
+    updateMapTheme(isDarkMode);
+  });
+}
 
 /* =====================
    🧠 STATE
@@ -132,7 +170,6 @@ socket.on("receive-location", ({ lat, lng, id, username: user }) => {
         direction: "top"
       });
 
-    // dropdown update
     const userList = document.getElementById("userList");
     if (userList) {
       const option = document.createElement("option");
